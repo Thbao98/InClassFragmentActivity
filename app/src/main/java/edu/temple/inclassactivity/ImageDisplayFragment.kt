@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -17,6 +18,10 @@ const val IMAGES_KEY = "imageList"
 class ImageDisplayFragment : Fragment() {
 
     private lateinit var images: IntArray
+
+    private val mainViewModel : MainViewModel by lazy {
+        ViewModelProvider(requireActivity())[MainViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,17 +45,25 @@ class ImageDisplayFragment : Fragment() {
         // The recycler view is the root element of the Fragment's layout
         // as such the view argument passed to onViewCreated() is the RecyclerView
         with (view as RecyclerView) {
-            adapter = CustomRecyclerAdapter(images)
+            mainViewModel.getImageIds().observe(requireActivity()){
+                adapter = CustomRecyclerAdapter(it){
+                    (requireActivity() as ItemSelectedInterface).itemSelected(it)
+                }
+            }
+
             layoutManager = GridLayoutManager(requireContext(), 2)
         }
     }
 
-    companion object {
-        fun newInstance(images: IntArray) =
-            ImageDisplayFragment().apply {
-                arguments = Bundle().apply {
-                    putIntArray(IMAGES_KEY, images)
-                }
-            }
+//    companion object {
+//        fun newInstance(images: IntArray) =
+//            ImageDisplayFragment().apply {
+//                arguments = Bundle().apply {
+//                    putIntArray(IMAGES_KEY, images)
+//                }
+//            }
+//    }
+    interface ItemSelectedInterface{
+        fun itemSelected(item: Int)
     }
 }
